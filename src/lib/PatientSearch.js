@@ -1,7 +1,9 @@
 import moment from "moment"
+import qs from "qs"
 import { CODE_SYSTEMS } from "./constants"
 import { parseQueryString, request } from "."
 import { intVal, getPath } from "."
+import { getBearerToken } from '../config.default.js'; // Adjust the path as necessary
 
 /**
  * This is just a helper class that is used as a query builder. It has some
@@ -802,11 +804,37 @@ export default class PatientSearch
 
         let data = this.compile()
 
+        // console.log("URL:",tokenUrl)
+        // let tokenData = qs.stringify({
+        //     grant_type: 'client_credentials',
+      // Replace with your client ID
+        //     resource: 'https://qed-fhir-test01.azurehealthcareapis.com'
+        // })
+        // console.log("tokenData:",tokenData)
+        // let headers = {
+        //     'Content-Type': 'application/x-www-form-urlencoded',
+        //     'Accept': 'application/fhir+json'   ,
+        //     // 'Authorization': 'Bearer ••••••', // Replace with the appropriate authorization token
+        //     'Cookie': 'fpc=AqtEayoniJ9FtLgnkYgu8J1RHIzwAQAAAFtkH98OAAAA; stsservicecookie=estsfd; x-ms-gateway-slice=estsfd'
+        // }
+        // console.log("HDR:",headers)
+
+        // try {
+        //     const response =  axios.post(tokenUrl, tokenData, { headers });
+        //     console.log("RESPONSE:",response)
+        //     console.log("TOKEN:",response.data.access_token)
+        //     let bearerToken =  response.data.access_token;  // Access token from the response
+        // } catch (error) {
+        //     console.error('Error getting access token:', error);
+        //     throw error;
+        // }
+
+        // let bearerToken = this.getBearerToken()
+        // console.log("BEARER:",bearerToken)
         // STU2 does not work with the deceased param
         if (server.type == "DSTU-2") {
             data = data.replace(/\bdeceased=(true|false)\b/gi, "");
         }
-
         // prepare the base options for the patient ajax request
         let options = {
             url: this.offset && this.cacheId ? server.url : `${server.url}/Patient/_search`,
@@ -815,11 +843,22 @@ export default class PatientSearch
             data,
             headers: {
                 accept: "application/json+fhir",
-                "content-type": "application/x-www-form-urlencoded"
+                "content-type": "application/x-www-form-urlencoded" ,
+                "Access-Control-Allow-Origin":  "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization"
             }
         };
-
-        return this.getPatientIDs(server)
+        console.log("OPTIONS:",options)
+        console.log("SERVER:",server)
+        // let x = getBearerToken(server)
+        // console.log("X",x)
+        // Get the Bearer Token
+        return getBearerToken(server) // Get the Bearer Token
+            .then(bearerToken => {
+                options.headers["Authorization"] = "Bearer " + bearerToken; // Set the Bearer Token in headers
+                return this.getPatientIDs(server);
+            })
         .then(ids => {
             if (ids.length) {
                 // if IDs were found - add them to the patient query

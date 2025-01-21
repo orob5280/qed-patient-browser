@@ -1,8 +1,12 @@
+import axios from 'axios';
+import qs from 'qs';
+
+
 export default {
     server: {
-        type: "STU-3", // "DSTU-2" or "STU-3" or "R4"
+        type: "R4", // "DSTU-2" or "STU-3" or "R4"
 
-        url: "https://r3.smarthealthit.org",
+        url: "https://qed-fhir-test01.azurehealthcareapis.com",
 
         conditions: {},
 
@@ -38,5 +42,26 @@ export default {
 
     // "automatic" -> onChange plus defer in some cases
     // "manual" -> render a submit button
-    submitStrategy: "manual"
+    submitStrategy: "manual"   ,
+
+}
+
+export async function getBearerToken(config) {
+
+    const tenantId =
+    const tokenUrl = 'https://login.microsoftonline.com/' + tenantId + '/oauth2/token';
+    console.log("URL:",tokenUrl)
+    const requestBody = qs.stringify({
+        grant_type: 'client_credentials',
+        client_id:
+        client_secret:
+        resource: 'https://qed-fhir-test01.azurehealthcareapis.com'
+
+    });
+    const response = await axios.post(tokenUrl, requestBody, {
+        headers: {'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/fhir+json'
+        }
+    });
+    return response.data.access_token;
 }

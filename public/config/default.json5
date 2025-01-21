@@ -1,7 +1,7 @@
 {
     server: {
-        type: "STU-3",
-        url: "https://r3.smarthealthit.org",
+        type: "R4",
+        url: "https://qed-fhir-test01.azurehealthcareapis.com",
         tags: [
             {
                 key  : "pro-7-2017",
