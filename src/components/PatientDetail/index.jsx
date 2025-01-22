@@ -32,6 +32,7 @@ import {
     getAllPages
 } from "../../lib"
 import "./PatientDetail.less"
+import {getBearerToken} from "../../config.default.js";
 
 /**
  * Renders the detail page.
@@ -173,11 +174,26 @@ export class PatientDetail extends React.Component
         .then(state => new Promise(resolve => {
             this.setState(state, () => resolve(state))
         }))
-
+        // return getBearerToken(server) // Get the Bearer Token
+        //     .then(bearerToken => {
+        //         options.headers["Authorization"] = "Bearer " + bearerToken;
+        //         return this.getPatientIDs(server);
+        //     })
+        //     .then(ids => {
+        //
+        //     }
         // Find $everything
         .then(state => {
-            return getAllPages({ url: `${server.url}/Patient/${state.patient.id}/$everything?_count=500` })
-            .then(data => {
+            return getBearerToken( server)
+                .then(bearerToken => {
+                    const options = {
+                        headers: {
+                            "Authorization": "Bearer " + bearerToken
+                        }
+                    };
+                    return getAllPages({ url: `${server.url}/Patient/${state.patient.id}/$everything?_count=500`, ...options });
+                })
+                .then(data => {
                 let groups = {};
                 data.forEach(entry => {
                     let resourceType = getPath(entry, "resource.resourceType") || "Other";
